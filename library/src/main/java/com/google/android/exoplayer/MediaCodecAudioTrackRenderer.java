@@ -53,6 +53,8 @@ public class MediaCodecAudioTrackRenderer extends MediaCodecTrackRenderer {
      */
     void onAudioTrackWriteError(AudioTrack.WriteException e);
 
+      void onAudioInfo(String type, int sampleRate, int channelNo);
+
   }
 
   /**
@@ -246,6 +248,8 @@ public class MediaCodecAudioTrackRenderer extends MediaCodecTrackRenderer {
       }
     }
 
+      notifyAudioInfo(codec);
+
     int handleBufferResult;
     try {
       handleBufferResult = audioTrack.handleBuffer(
@@ -300,5 +304,20 @@ public class MediaCodecAudioTrackRenderer extends MediaCodecTrackRenderer {
       });
     }
   }
+
+    private void notifyAudioInfo(MediaCodec codec) {
+        if (eventHandler != null && eventListener != null) {
+            final String codecName = codec.getName();
+            final int sampleRate = codec.getOutputFormat().getInteger(MediaFormat.KEY_SAMPLE_RATE);
+            final int channelNo = codec.getOutputFormat().getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+
+            eventHandler.post(new Runnable()  {
+                @Override
+                public void run() {
+                    eventListener.onAudioInfo(codecName,sampleRate,channelNo);
+                }
+            });
+        }
+    }
 
 }
